@@ -138,9 +138,9 @@
                 // ATENÇÃO: Se o seu arquivo principal tiver outro nome (como index.html), mude aqui abaixo!
                window.location.href = "AGENDA AUTOMATIZADA.html";
 
-            } catch (err) {
-                console.error("Erro na autenticação:", err);
-                alert("Não foi possível conectar ao servidor back-end.");
+           } catch (err) {
+                console.error("Erro detalhado na autenticação:", err); // <--- Atualize esta linha
+                alert("Erro ao conectar: " + err.message); // <--- E esta para mostrar o erro exato
             }
         }
     </script>
