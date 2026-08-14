@@ -104,13 +104,14 @@
             }
         }
 
-       async function handleAuth(event) {
+      async function handleAuth(event) {
             event.preventDefault();
-            console.log("Botão clicado! Tentando logar..."); // <--- Adicione esta linha
+            console.log("Botão clicado! Iniciando requisição...");
+
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             
-           const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+            const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
             
             const payload = { email, password };
             if (!isLoginMode) {
@@ -118,14 +119,18 @@
             }
 
             try {
-           const response = await fetch(endpoint.startsWith('/') ? endpoint : '/' + endpoint, {
+                // Usando a URL completa do seu projeto na Vercel para garantir que ache o backend
+                const url = 'https://dlssystem-backend.vercel.app' + endpoint;
+                console.log("Enviando requisição para:", url);
+
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
-                console.log("Resposta do servidor:", data);
+                console.log("Resposta recebida do servidor:", data);
 
                 if (!response.ok) {
                     alert(data.error || 'Ocorreu um erro na autenticação.');
@@ -133,14 +138,13 @@
                 }
 
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('salon', JSON.stringify(data.user));
+                localStorage.setItem('salon', JSON.stringify(data.user || data.salon));
 
-                // ATENÇÃO: Se o seu arquivo principal tiver outro nome (como index.html), mude aqui abaixo!
-               window.location.href = "AGENDA AUTOMATIZADA.html";
+                window.location.href = "AGENDA AUTOMATIZADA.html";
 
-           } catch (err) {
-                console.error("Erro detalhado na autenticação:", err); // <--- Atualize esta linha
-                alert("Erro ao conectar: " + err.message); // <--- E esta para mostrar o erro exato
+            } catch (err) {
+                console.error("Erro capturado no catch:", err);
+                alert("Erro de conexão com o servidor: " + err.message);
             }
         }
     </script>
