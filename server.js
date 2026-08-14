@@ -20,7 +20,9 @@ app.get('/agendar.html', (req, res) => {
 app.get('/AGENDA%20AUTOMATIZADA.html', (req, res) => {
     res.sendFile(__dirname + '/AGENDA AUTOMATIZADA.html');
 });
-
+app.get('/login.html', (req, res) => {
+    res.sendFile(__dirname + '/login.html');
+});
 // Conexão com o Banco de Dados SQLite
 const db = new sqlite3.Database('./dlsystem.db', (err) => {
     if (err) {
