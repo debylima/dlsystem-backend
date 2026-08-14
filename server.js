@@ -12,6 +12,14 @@ app.use(express.json());
 
 // Permite que o servidor entregue arquivos estáticos localizados na mesma pasta do server.js
 app.use(express.static(__dirname));
+// Rotas explícitas para os arquivos HTML
+app.get('/agendar.html', (req, res) => {
+    res.sendFile(__dirname + '/agendar.html');
+});
+
+app.get('/AGENDA%20AUTOMATIZADA.html', (req, res) => {
+    res.sendFile(__dirname + '/AGENDA AUTOMATIZADA.html');
+});
 
 // Conexão com o Banco de Dados SQLite
 const db = new sqlite3.Database('./dlsystem.db', (err) => {
