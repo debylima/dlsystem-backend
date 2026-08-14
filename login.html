@@ -107,7 +107,7 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             
-            const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+           const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
             
             const payload = { email, password };
             if (!isLoginMode) {
@@ -115,7 +115,7 @@
             }
 
             try {
-                const response = await fetch(`${API_URL}${endpoint}`, {
+           const response = await fetch(endpoint.startsWith('/') ? endpoint : '/' + endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
