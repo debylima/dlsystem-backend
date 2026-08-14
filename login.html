@@ -119,9 +119,8 @@
             }
 
             try {
-                // Usando a URL completa do seu projeto na Vercel para garantir que ache o backend
-                const url = 'https://dlssystem-backend.vercel.app' + endpoint;
-                console.log("Enviando requisição para:", url);
+                
+                const url = endpoint;
 
                 const response = await fetch(url, {
                     method: 'POST',
