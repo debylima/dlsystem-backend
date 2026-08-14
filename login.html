@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLSystem - Acesso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 font-sans text-gray-800 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-lg border border-gray-100 space-y-6">
+        
+        <!-- LOGO E CABEÇALHO -->
+        <div class="flex flex-col items-center text-center space-y-2">
+            <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-md shadow-indigo-200">
+                DL
+            </div>
+            <h2 id="auth-title" class="text-2xl font-bold text-slate-800 pt-2">Acesse sua Conta</h2>
+            <p id="auth-subtitle" class="text-sm text-slate-500">Insira suas credenciais para gerenciar sua agenda</p>
+        </div>
+
+        <!-- FORMULÁRIO DE AUTENTICAÇÃO -->
+        <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+            
+            <!-- CAMPO NOME (Escondido por padrão, aparece apenas no Cadastro) -->
+            <div id="container-nome" class="hidden space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">Nome do Estabelecimento / Salão</label>
+                <div class="relative flex items-center">
+                    <i data-lucide="store" class="absolute left-3 w-5 h-5 text-slate-400"></i>
+                    <input type="text" id="auth-name" placeholder="Ex: Salão da Débora" class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm">
+                </div>
+            </div>
+
+            <!-- CAMPO E-MAIL (Borda corrigida para seguir o padrão visual) -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">E-mail</label>
+                <div class="relative flex items-center">
+                    <i data-lucide="mail" class="absolute left-3 w-5 h-5 text-slate-400"></i>
+                    <input type="email" id="auth-email" placeholder="seu@email.com" required class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm">
+                </div>
+            </div>
+
+            <!-- CAMPO SENHA -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">Senha</label>
+                <div class="relative flex items-center">
+                    <i data-lucide="lock" class="absolute left-3 w-5 h-5 text-slate-400"></i>
+                    <input type="password" id="auth-password" placeholder="••••••••" required class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm">
+                </div>
+            </div>
+
+            <!-- BOTÃO DE SUBMIT -->
+            <button type="submit" id="auth-submit-btn" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-indigo-100 text-sm mt-2">
+                <span id="btn-text">Entrar no Sistema</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </form>
+
+        <!-- ALTERNADOR DE TELAS (LOGIN / CADASTRO) -->
+        <div class="text-center pt-2 border-t border-gray-100">
+            <button onclick="toggleAuthMode()" id="auth-toggle-link" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-all">
+                Não tem uma conta? Cadastre-se gratuitamente
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let isLoginMode = true;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const containerNome = document.getElementById('container-nome');
+            const inputNome = document.getElementById('auth-name');
+            const btnText = document.getElementById('btn-text');
+            const toggleLink = document.getElementById('auth-toggle-link');
+
+            if (isLoginMode) {
+                title.innerText = "Acesse sua Conta";
+                subtitle.innerText = "Insira suas credenciais para gerenciar sua agenda";
+                containerNome.classList.add('hidden');
+                inputNome.removeAttribute('required');
+                btnText.innerText = "Entrar no Sistema";
+                toggleLink.innerText = "Não tem uma conta? Cadastre-se gratuitamente";
+            } else {
+                title.innerText = "Crie sua Conta";
+                subtitle.innerText = "Cadastre seu estabelecimento no DLSystem hoje";
+                containerNome.classList.remove('hidden');
+                inputNome.setAttribute('required', 'required');
+                btnText.innerText = "Criar Minha Conta";
+                toggleLink.innerText = "Já possui uma conta? Faça o Login";
+            }
+        }
+
+        async function handleAuth(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+            
+            const payload = { email, password };
+            if (!isLoginMode) {
+                payload.name = document.getElementById('auth-name').value;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Ocorreu um erro na autenticação.');
+                    return;
+                }
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('salon', JSON.stringify(data.user));
+
+                // ATENÇÃO: Se o seu arquivo principal tiver outro nome (como index.html), mude aqui abaixo!
+               window.location.href = "AGENDA AUTOMATIZADA.html";
+
+            } catch (err) {
+                console.error("Erro na autenticação:", err);
+                alert("Não foi possível conectar ao servidor back-end.");
+            }
+        }
+    </script>
+</body>
+</html>

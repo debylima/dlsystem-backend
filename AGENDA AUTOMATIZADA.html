@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLSystem - Painel de Controle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between p-5">
+            <div>
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-xl">DL</div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-none">DLSystem</h1>
+                        <span class="text-xs text-slate-400">Agendamento & Gestão</span>
+                    </div>
+                </div>
+
+                <nav class="space-y-2">
+                    <button id="menu-btn-agenda" onclick="mudarAba('agenda')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium transition-all">
+                        <i data-lucide="calendar"></i> Agenda Diária
+                    </button>
+                    <button id="menu-btn-estoque" onclick="mudarAba('estoque')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i data-lucide="package"></i> Estoque
+                    </button>
+                    <button id="menu-btn-financeiro" onclick="mudarAba('financeiro')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i data-lucide="dollar-sign"></i> Fluxo de Caixa
+                    </button>
+                    <button id="menu-btn-painel" onclick="mudarAba('painel')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i data-lucide="brain"></i> Painel Inteligente
+                    </button>
+                    <button id="menu-btn-configuracoes" onclick="mudarAba('configuracoes')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                        <i data-lucide="settings"></i> Configurações
+                    </button>
+                </nav>
+            </div>
+
+            <div class="border-t border-slate-800 pt-4 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div id="user-avatar" class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center font-bold text-sm text-indigo-300">U</div>
+                    <div>
+                        <p id="user-name" class="font-medium text-sm">Administrador</p>
+                        <span id="user-role" class="text-xs text-slate-400">Administrador</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-900/40 hover:bg-red-900/60 text-red-200 rounded-lg text-sm font-medium transition-all">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Sair do Sistema
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-100">
+            
+            <header class="bg-white border-b border-gray-200 py-4 px-8 flex justify-between items-center shadow-sm">
+                <h2 id="titulo-pagina" class="text-2xl font-bold text-gray-800">Agenda Diária</h2>
+                <div id="data-atual-header" class="text-sm font-medium text-slate-500">Aguardando data...</div>
+            </header>
+
+            <div class="p-8 max-w-7xl w-full mx-auto space-y-8 flex-1">
+
+                <!-- ABA AGENDA -->
+                <section id="aba-agenda" class="space-y-6">
+                    <div class="flex flex-wrap justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <label for="filtro-data" class="font-medium text-gray-700">Filtrar por data:</label>
+                            <input type="date" id="filtro-data" onchange="carregarAgenda()" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="abrirModalServico()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3.5 py-2.5 rounded-lg transition-all border border-slate-300 text-sm">
+                                <i data-lucide="scissors" class="w-4 h-4"></i> ✂️ Serviço
+                            </button>
+                            <button onclick="abrirModalProfissional()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3.5 py-2.5 rounded-lg transition-all border border-slate-300 text-sm">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i> 👤 Profissional
+                            </button>
+                            <button onclick="abrirModalAgendamento()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-lg transition-all shadow-sm text-sm">
+                                <i data-lucide="plus" class="w-5 h-5"></i> 📅 Novo Agendamento
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="grid-agendamentos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+                </section>
+
+                <!-- ABA ESTOQUE -->
+                <section id="aba-estoque" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-800">Controle de Produtos</h3>
+                        <button onclick="abrirModalProduto()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i> 📦 Novo Produto
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 uppercase text-xs font-semibold border-b border-gray-200">
+                                    <th class="p-4">Produto</th>
+                                    <th class="p-4">Quantidade</th>
+                                    <th class="p-4">Qtd. Mínima</th>
+                                    <th class="p-4">Custo</th>
+                                    <th class="p-4 text-center">Status</th>
+                                    <th class="p-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-estoque" class="divide-y divide-gray-150">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ABA FINANCEIRO -->
+                <section id="aba-financeiro" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                            <div class="p-4 bg-emerald-100 text-emerald-600 rounded-lg"><i data-lucide="trending-up" class="w-6 h-6"></i></div>
+                            <div>
+                                <span class="text-xs text-gray-500 uppercase font-semibold">Total Entradas</span>
+                                <h4 id="fin-entradas" class="text-2xl font-bold text-emerald-600">R$ 0,00</h4>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                            <div class="p-4 bg-red-100 text-red-600 rounded-lg"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
+                            <div>
+                                <span class="text-xs text-gray-500 uppercase font-semibold">Total Saídas</span>
+                                <h4 id="fin-saidas" class="text-2xl font-bold text-red-600">R$ 0,00</h4>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                            <div class="p-4 bg-indigo-100 text-indigo-600 rounded-lg"><i data-lucide="dollar-sign" class="w-6 h-6"></i></div>
+                            <div>
+                                <span class="text-xs text-gray-500 uppercase font-semibold">Saldo Líquido</span>
+                                <h4 id="fin-saldo" class="text-2xl font-bold text-indigo-600">R$ 0,00</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-800">Lançamentos de Caixa</h3>
+                        <button onclick="abrirModalFinanceiro()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i> 💰 Lançar Despesa / Receita
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 uppercase text-xs font-semibold border-b border-gray-200">
+                                    <th class="p-4">Data</th>
+                                    <th class="p-4">Descrição</th>
+                                    <th class="p-4">Categoria</th>
+                                    <th class="p-4">Tipo</th>
+                                    <th class="p-4 text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-financeiro" class="divide-y divide-gray-150">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ABA PAINEL INTELIGENTE -->
+<section id="aba-painel" class="hidden space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- CARD PREDIÇÕES DE FATURAMENTO -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex items-center gap-3 text-indigo-600">
+                <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                <h3 class="font-bold text-lg text-gray-800">Predições de Faturamento</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-4 pt-2">
+                <div class="bg-slate-50 p-4 rounded-lg">
+                    <span class="text-xs text-gray-500">Faturamento Atual</span>
+                    <p id="pred-faturamento" class="text-xl font-bold text-slate-800">R$ 0,00</p>
+                </div>
+                <div class="bg-indigo-50/50 p-4 rounded-lg border border-indigo-100">
+                    <span class="text-xs text-indigo-600 font-semibold">Previsão Preditiva</span>
+                    <p id="pred-ia" class="text-xl font-bold text-indigo-700">R$ 0,00</p>
+                </div>
+            </div>
+            <p id="pred-insight" class="text-sm text-gray-600 bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg">
+                Calculando insights preditivos...
+            </p>
+        </div>
+
+        <!-- NOVO CARD: LEMBRETES AUTOMÁTICOS DE HORÁRIO -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex items-center gap-3 text-emerald-600">
+                <i data-lucide="bell" class="w-6 h-6"></i>
+                <h3 class="font-bold text-lg text-gray-800">Lembretes de Horários (Hoje)</h3>
+            </div>
+            <div id="container-lembretes" class="space-y-3 max-h-60 overflow-y-auto">
+                <p class="text-xs text-slate-400 italic">Carregando lembretes...</p>
+            </div>
+        </div>
+
+        <!-- CARD CLIENTES AUSENTES (CHURN) -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex items-center gap-3 text-rose-600">
+                <i data-lucide="heart-pulse" class="w-6 h-6"></i>
+                <h3 class="font-bold text-lg text-gray-800">Clientes Ausentes (Alerta de Churn)</h3>
+            </div>
+            <div id="container-churn" class="space-y-3 max-h-60 overflow-y-auto">
+            </div>
+        </div>
+
+        <!-- CARD FOCO OPERACIONAL INTELIGENTE -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex items-center gap-3 text-teal-600">
+                <i data-lucide="target" class="w-6 h-6"></i>
+                <h3 class="font-bold text-lg text-gray-800">Foco Operacional Inteligente</h3>
+            </div>
+            <p class="text-sm text-gray-600">
+                Nosso motor inteligente analisa qual serviço ou atividade está mais requisitada atualmente para focar recursos de estoque ou marketing.
+            </p>
+            <div class="bg-teal-50 border border-teal-100 p-4 rounded-lg flex justify-between items-center">
+                <div>
+                    <span class="text-xs text-teal-700 uppercase font-semibold">Especialidade em Destaque</span>
+                    <h4 id="foco-operacional-texto" class="text-xl font-bold text-teal-800">Analisando dados...</h4>
+                </div>
+                <div class="p-3 bg-teal-100 text-teal-600 rounded-full"><i data-lucide="sparkles"></i></div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+                <!-- ABA CONFIGURAÇÕES -->
+                <section id="aba-configuracoes" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- CONFIGURAÇÕES DE SINAL -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4 flex flex-col justify-between">
+                            <div class="space-y-4">
+                                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2"><i data-lucide="shield-check" class="text-indigo-600"></i> Pagamento Antecipado (Sinal)</h3>
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" id="config-sinal-ativo" onchange="alternarVisibilidadeServicosSinal()" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                        <span class="font-medium text-gray-700">Exigir pagamento antecipado (Sinal)</span>
+                                    </label>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor do Sinal (R$)</label>
+                                        <input type="number" step="0.01" id="config-sinal-valor" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Chave Pix de Recebimento</label>
+                                        <input type="text" id="config-sinal-pix" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="CPF, Celular, E-mail ou Chave Aleatória">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp de Suporte / Atendimento</label>
+                                        <input type="text" id="config-suporte-whatsapp" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="Ex: 53999999999">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Mensagem Explicativa para o Cliente</label>
+                                        <textarea id="config-sinal-mensagem" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none resize-none"></textarea>
+                                    </div>
+
+                                    <!-- SELEÇÃO DE SERVIÇOS DO SINAL -->
+                                    <div id="container-selecao-servicos-sinal" class="hidden space-y-2 border-t border-gray-200 pt-3">
+                                        <label class="block text-sm font-bold text-slate-700 mb-1">Quais procedimentos exigem sinal?</label>
+                                        <div id="lista-servicos-checkboxes" class="max-h-36 overflow-y-auto p-2 bg-slate-50 rounded-lg border border-gray-200 space-y-1.5">
+                                            <!-- Preenchido via JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="salvarConfiguracoesSalao()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition-all mt-4">Salvar Configurações</button>
+                        </div>
+
+                        <!-- GRADE HORÁRIA & INTEGRAÇÕES -->
+                        <div class="space-y-6">
+                            <!-- CONFIGURAÇÃO DA GRADE -->
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4">
+                                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2"><i data-lucide="clock" class="text-indigo-600"></i> Grade de Horários de Trabalho</h3>
+                                <p class="text-xs text-gray-500">Adicione os horários personalizados que você deseja disponibilizar online.</p>
+                                
+                                <div class="flex gap-2">
+                                    <input type="time" id="novo-horario-input" class="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 flex-1">
+                                    <button onclick="adicionarHorarioNaGrade()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-1 transition-all">
+                                        <i data-lucide="plus" class="w-4 h-4"></i> Adicionar
+                                    </button>
+                                </div>
+
+                                <div id="container-grade-horarios" class="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1 border border-dashed border-gray-200 rounded-lg min-h-[80px]">
+                                </div>
+
+                                <button onclick="salvarGradeHoraria()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition-all">Salvar Horários</button>
+                            </div>
+
+                            <!-- INTEGRAÇÃO GOOGLE AGENDA -->
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4">
+                                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2"><i data-lucide="refresh-cw" class="text-indigo-600"></i> Sincronização & Integrações</h3>
+                                <p class="text-xs text-gray-500">Conecte sua conta do Google Agenda para espelhar seus compromissos automaticamente e evitar conflitos.</p>
+                                
+                                <div class="p-4 bg-slate-50 border border-gray-200 rounded-xl flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-9 h-9 bg-white border border-gray-200 rounded-lg flex items-center justify-center font-bold text-red-500 text-sm shadow-sm">G</div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-slate-800">Google Calendar (Agenda)</h4>
+                                            <span id="status-google-agenda" class="text-xs text-slate-400">Desconectado</span>
+                                        </div>
+                                    </div>
+                                    <button id="btn-integrar-google" onclick="gerenciarIntegraçãoGoogle()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-2 rounded-lg border border-indigo-200 transition-all">
+                                        Conectar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAIS -->
+
+    <!-- NOVO AGENDAMENTO -->
+    <div id="modal-agendamento" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-gray-800">Novo Agendamento</h3>
+            <form id="form-agendamento" class="space-y-3" onsubmit="salvarAgendamento(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Cliente</label>
+                    <select id="appt-cliente" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Serviço</label>
+                    <select id="appt-servico" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Profissional</label>
+                    <select id="appt-profissional" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data</label>
+                        <input type="date" id="appt-data" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Horário</label>
+                        <input type="time" id="appt-hora" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="fecharModal('modal-agendamento')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Agendar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CADASTRAR NOVO SERVIÇO -->
+    <!-- Modal Serviço Completo -->
+<div id="modal-servico" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+        <h3 class="text-lg font-bold text-gray-800">Cadastrar Novo Serviço</h3>
+        <form id="form-servico" class="space-y-3" onsubmit="salvarServico(event)">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nome do Serviço</label>
+                <input type="text" id="srv-nome" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Preço (R$)</label>
+                <input type="number" step="0.01" id="srv-preco" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Duração (min)</label>
+                    <input type="number" id="srv-duracao" value="30" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Retorno (dias)</label>
+                    <input type="number" id="srv-retorno" value="30" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none">
+                </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-gray-200">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" id="srv-adiantamento-check" class="rounded text-indigo-600"> Cobrar Sinal Antecipado
+                </label>
+                <input type="number" step="0.01" id="srv-adiantamento-valor" placeholder="Valor do Sinal (R$)" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none text-sm">
+            </div>
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" onclick="fecharModal('modal-servico')" class="px-4 py-2 bg-slate-100 rounded-lg text-slate-700 font-medium">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 rounded-lg text-white font-medium">Cadastrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <!-- CADASTRAR PROFISSIONAL -->
+    <div id="modal-profissional" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-gray-800">Cadastrar Novo Profissional</h3>
+            <form id="form-profissional" class="space-y-3" onsubmit="salvarProfissional(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                    <input type="text" id="prof-nome" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                    <input type="text" id="prof-telefone" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Taxa de Comissão (%)</label>
+                    <input type="number" step="0.1" id="prof-comissao" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="fecharModal('modal-profissional')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Cadastrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PRODUTO -->
+    <div id="modal-produto" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-gray-800">Novo Produto</h3>
+            <form id="form-produto" class="space-y-3" onsubmit="salvarProduto(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nome do Produto</label>
+                    <input type="text" id="prod-nome" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Quantidade</label>
+                        <input type="number" id="prod-qtd" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Qtd. Mínima</label>
+                        <input type="number" id="prod-min" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Custo (R$)</label>
+                    <input type="number" step="0.01" id="prod-custo" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="fecharModal('modal-produto')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Cadastrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FINANCEIRO -->
+    <div id="modal-financeiro" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-gray-800">Lançamento de Caixa</h3>
+            <form id="form-financeiro" class="space-y-3" onsubmit="salvarFinanceiro(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Tipo</label>
+                    <select id="fin-tipo" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                        <option value="entry">Entrada (Receita)</option>
+                        <option value="outflow">Saída (Despesa)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <input type="text" id="fin-descricao" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <input type="text" id="fin-categoria" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Data</label>
+                    <input type="date" id="fin-data" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                    <input type="number" step="0.01" id="fin-valor" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="fecharModal('modal-financeiro')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOGIC SCRIPTS -->
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let gradeHorariaLocal = [];
+        let listaServicosCadastrados = [];
+        let googleAgendaConectado = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            const salon = JSON.parse(localStorage.getItem('salon'));
+
+            if (!token) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            document.getElementById('user-name').innerText = salon?.name || 'Administrador';
+            document.getElementById('user-avatar').innerText = salon?.name ? salon.name.substring(0, 2).toUpperCase() : 'AD';
+
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('filtro-data').value = hoje;
+            document.getElementById('data-atual-header').innerText = formatarDataBR(hoje);
+
+            lucide.createIcons();
+            carregarAgenda();
+            carDropdownsAgendamento();
+            // Exemplo de manipulador ao selecionar o serviço no agendamento:
+const selectServico = document.getElementById('agendamento-servico');
+
+if (selectServico) {
+    selectServico.addEventListener('change', (e) => {
+        const servicoId = e.target.value;
+        const servicoSelecionado = listaServicos.find(s => s.id == servicoId);
+
+        const containerAdiantamento = document.getElementById('container-aviso-adiantamento');
+        const inputValorSinal = document.getElementById('agendamento-valor-sinal');
+
+        if (servicoSelecionado && (servicoSelecionado.charge_advance == 1 || servicoSelecionado.charge_advance === true)) {
+            // Exibe o container ou destaca que é necessário o sinal
+            if (containerAdiantamento) containerAdiantamento.classList.remove('hidden');
+            if (inputValorSinal) {
+                inputValorSinal.value = servicoSelecionado.advance_value || 0;
+            }
+        } else {
+            // Oculta se não exigir adiantamento
+            if (containerAdiantamento) containerAdiantamento.classList.add('hidden');
+            if (inputValorSinal) {
+                inputValorSinal.value = '';
+            }
+        }
+    });
+}
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        function formatarDataBR(dataSql) {
+            if(!dataSql) return '';
+            const parts = dataSql.split('T')[0].split('-');
+            if(parts.length !== 3) return dataSql;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function mudarAba(aba) {
+            const abas = ['agenda', 'estoque', 'financeiro', 'painel', 'configuracoes'];
+            abas.forEach(a => {
+                document.getElementById(`aba-${a}`).classList.add('hidden');
+                const btn = document.getElementById(`menu-btn-${a}`);
+                if (btn) btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all";
+            });
+
+            document.getElementById(`aba-${aba}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`menu-btn-${aba}`);
+            if (activeBtn) activeBtn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium transition-all";
+
+            const titulos = {
+                agenda: 'Agenda Diária',
+                estoque: 'Controle de Estoque',
+                financeiro: 'Fluxo de Caixa',
+                painel: 'Painel Inteligente',
+                configuracoes: 'Configurações de Agendamento'
+            };
+            document.getElementById('titulo-pagina').innerText = titulos[aba] || 'Painel';
+
+            if (aba === 'agenda') carregarAgenda();
+            else if (aba === 'estoque') carregarEstoque();
+            else if (aba === 'financeiro') carregarFinanceiro();
+            else if (aba === 'painel') carregarPainelInteligente();
+            else if (aba === 'configuracoes') carregarConfiguracoes();
+        }
+
+        // ==========================================
+        // CONFIGURAÇÕES DO SALÃO E SERVIÇOS DO SINAL
+        // ==========================================
+        async function carregarConfiguracoes() {
+            const token = localStorage.getItem('token');
+            const headers = { 'Authorization': `Bearer ${token}` };
+
+            try {
+                const srvRes = await fetch(`${API_URL}/services`, { headers });
+                listaServicosCadastrados = await srvRes.json();
+
+                const resConfig = await fetch(`${API_URL}/salon/settings`, { headers });
+                const config = await resConfig.json();
+
+                document.getElementById('config-sinal-ativo').checked = config.charge_advance === 1;
+                document.getElementById('config-sinal-valor').value = config.advance_value || '';
+                document.getElementById('config-sinal-pix').value = config.pix_key || '';
+                document.getElementById('config-suporte-whatsapp').value = config.support_phone || '';
+                document.getElementById('config-sinal-mensagem').value = config.explanatory_message || '';
+
+                googleAgendaConectado = config.google_calendar_integrated === 1;
+                atualizarInterfaceGoogleAgenda();
+
+                montarListaCheckboxesServicos(config.advance_services_ids || []);
+                alternarVisibilidadeServicosSinal();
+
+                const resGrid = await fetch(`${API_URL}/salon/schedule-grid`, { headers });
+                gradeHorariaLocal = await resGrid.json() || [];
+                renderizarGradeHorarios();
+
+            } catch (err) {
+                console.error("Erro ao carregar configurações:", err);
+            }
+        }
+
+        function montarListaCheckboxesServicos(servicosComSinalIds) {
+            const container = document.getElementById('lista-servicos-checkboxes');
+            container.innerHTML = '';
+
+            if (listaServicosCadastrados.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 p-2">Nenhum serviço cadastrado.</p>';
+                return;
+            }
+
+            listaServicosCadastrados.forEach(s => {
+                const checked = servicosComSinalIds.includes(s.id) ? 'checked' : '';
+                const item = document.createElement('label');
+                item.className = "flex items-center gap-2 px-2 py-1 text-xs hover:bg-slate-200 rounded cursor-pointer transition-all text-slate-700";
+                item.innerHTML = `
+                    <input type="checkbox" name="servicos-sinal-check" value="${s.id}" ${checked} class="rounded text-indigo-600 border-gray-300 focus:ring-indigo-500 w-3.5 h-3.5">
+                    <span>${s.name} (R$ ${s.price.toFixed(2)})</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function alternarVisibilidadeServicosSinal() {
+            const ativo = document.getElementById('config-sinal-ativo').checked;
+            const container = document.getElementById('container-selecao-servicos-sinal');
+            if (ativo) container.classList.remove('hidden');
+            else container.classList.add('hidden');
+        }
+
+        async function salvarConfiguracoesSalao() {
+            const token = localStorage.getItem('token');
+            const checkboxes = document.querySelectorAll('input[name="servicos-sinal-check"]:checked');
+            const servicosSelecionadosIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            const payload = {
+                charge_advance: document.getElementById('config-sinal-ativo').checked ? 1 : 0,
+                advance_value: parseFloat(document.getElementById('config-sinal-valor').value || 0),
+                pix_key: document.getElementById('config-sinal-pix').value,
+                support_phone: document.getElementById('config-suporte-whatsapp').value,
+                explanatory_message: document.getElementById('config-sinal-mensagem').value,
+                advance_services_ids: servicosSelecionadosIds,
+                google_calendar_integrated: googleAgendaConectado ? 1 : 0
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/salon/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) alert("Configurações do salão salvas com sucesso!");
+                else alert("Erro ao atualizar configurações.");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function gerenciarIntegraçãoGoogle() {
+            if (!googleAgendaConectado) {
+                if (confirm("Deseja conectar o DLSystem à conta do Google Agenda para sincronização mútua?")) {
+                    googleAgendaConectado = true;
+                    alert("Sincronização com o Google Calendar ativada com sucesso!");
+                    atualizarInterfaceGoogleAgenda();
+                    salvarConfiguracoesSalao();
+                }
+            } else {
+                if (confirm("Deseja desativar e desconectar a integração com o Google Agenda?")) {
+                    googleAgendaConectado = false;
+                    alert("Integração removida.");
+                    atualizarInterfaceGoogleAgenda();
+                    salvarConfiguracoesSalao();
+                }
+            }
+        }
+
+        function atualizarInterfaceGoogleAgenda() {
+            const statusLabel = document.getElementById('status-google-agenda');
+            const btn = document.getElementById('btn-integrar-google');
+            
+            if (googleAgendaConectado) {
+                statusLabel.innerText = "Sincronizado e Ativo";
+                statusLabel.className = "text-xs text-emerald-600 font-bold flex items-center gap-1";
+                btn.innerText = "Desconectar";
+                btn.className = "bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold px-3 py-2 rounded-lg border border-rose-200 transition-all";
+            } else {
+                statusLabel.innerText = "Desconectado";
+                statusLabel.className = "text-xs text-slate-400";
+                btn.innerText = "Conectar";
+                btn.className = "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-2 rounded-lg border border-indigo-200 transition-all";
+            }
+        }
+
+        // ==========================================
+        // CARREGAMENTO DA AGENDA E CARD INTELIGENTE
+        // ==========================================
+      async function carregarAgenda() {
+    const token = localStorage.getItem('token');
+    const dataFiltro = document.getElementById('filtro-data').value;
+    
+    try {
+        const res = await fetch(`${API_URL}/appointments?date=${dataFiltro}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            console.warn(`Servidor retornou erro ${res.status} ao carregar agenda.`);
+            return;
+        }
+
+        const appointments = await res.json();
+        const grid = document.getElementById('grid-agendamentos');
+        if (grid) grid.innerHTML = '';
+
+        if (Array.isArray(appointments)) {
+            appointments.forEach(appt => {
+                let statusBgClass = 'bg-white border-gray-200';
+                let statusBadgeClass = 'bg-slate-100 text-slate-800';
+                let statusLabelText = 'Pendente';
+
+                if (appt.status === 'concluded') {
+                    statusBgClass = 'bg-emerald-50 border-emerald-200';
+                    statusBadgeClass = 'bg-emerald-100 text-emerald-800';
+                    statusLabelText = 'Concluído';
+                } else if (appt.status === 'cancelled') {
+                    statusBgClass = 'bg-rose-50 border-rose-200';
+                    statusBadgeClass = 'bg-rose-100 text-rose-800';
+                    statusLabelText = 'Cancelado';
+                } else if (appt.payment_status === 'pending_validation') {
+                    statusBgClass = 'bg-amber-50 border-amber-300 ring-2 ring-amber-200 animate-pulse';
+                    statusBadgeClass = 'bg-amber-100 text-amber-900 border border-amber-300';
+                    statusLabelText = '⚠️ Validar Pix de Sinal';
+                }
+
+                const paymentConfig = {
+                    pending: { text: 'Não Pago', color: 'text-rose-600' },
+                    pending_validation: { text: 'Aguardando Validação do Sinal', color: 'text-amber-700 font-bold' },
+                    paid: { text: 'Confirmado/Pago', color: 'text-emerald-600' }
+                };
+
+                const currentPayment = paymentConfig[appt.payment_status] || paymentConfig['pending'];
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-xl border shadow-sm flex flex-col justify-between transition-all hover:shadow-md ${statusBgClass}`;
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-bold ${statusBadgeClass} px-2.5 py-1 rounded-md">${statusLabelText}</span>
+                            <span class="text-sm font-bold text-slate-700 flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> ${appt.time}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900">${appt.client_name}</h4>
+                            <p class="text-xs text-slate-500">${appt.client_phone || '(Sem telefone)'}</p>
+                        </div>
+                        <div class="border-t border-slate-200/60 pt-3 space-y-1 text-sm">
+                            <p class="text-slate-600 flex justify-between"><span class="font-medium">Serviço:</span> <span>${appt.service_name}</span></p>
+                            <p class="text-slate-600 flex justify-between"><span class="font-medium">Profissional:</span> <span>${appt.professional_name || 'Qualquer'}</span></p>
+                            <p class="text-slate-600 flex justify-between"><span class="font-medium">Valor:</span> <span class="font-bold text-slate-800">R$ ${(appt.price || 0).toFixed(2)}</span></p>
+                            <p class="text-xs flex justify-between border-t border-dashed border-slate-200 pt-2"><span class="text-slate-400">Sinal:</span> <span class="${currentPayment.color}">${currentPayment.text}</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200/60 flex flex-col gap-2">
+                        ${appt.payment_status === 'pending_validation' ? `
+                            <button onclick="validarSinal(${appt.id})" class="w-full flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-all shadow-sm"><i data-lucide="check-circle-2" class="w-4 h-4"></i> Confirmar Recebimento do Pix</button>
+                        ` : ''}
+                        ${appt.status === 'pending' ? `
+                            <div class="flex gap-2">
+                                <button onclick="mudarStatusAgendamento(${appt.id}, 'concluded')" class="flex-1 flex items-center justify-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-all">Concluir</button>
+                                <button onclick="mudarStatusAgendamento(${appt.id}, 'cancelled')" class="flex-1 flex items-center justify-center gap-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs py-2 px-3 rounded-lg transition-all">Cancelar</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+    } catch (err) {
+        console.error("Erro ao carregar agenda:", err);
+    }
+}
+        async function mudarStatusAgendamento(id, novoStatus) {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_URL}/appointments/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+                if (res.ok) carregarAgenda();
+            } catch (err) { console.error(err); }
+        }
+
+        async function validarSinal(id) {
+            if (!confirm("Confirmar que você recebeu o Pix de sinal para este agendamento?")) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_URL}/appointments/${id}/payment`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payment_status: 'paid' })
+                });
+                if (res.ok) { alert("🎉 Pix confirmado e fluxo de caixa atualizado!"); carregarAgenda(); }
+            } catch (err) { console.error(err); }
+        }
+
+        async function carDropdownsAgendamento() {
+            const token = localStorage.getItem('token');
+            const headers = { 'Authorization': `Bearer ${token}` };
+            try {
+                const [clientes, servicos, profissionais] = await Promise.all([
+                    fetch(`${API_URL}/clients`, { headers }).then(r => r.json()),
+                    fetch(`${API_URL}/services`, { headers }).then(r => r.json()),
+                    fetch(`${API_URL}/professionals`, { headers }).then(r => r.json())
+                ]);
+                const selectCli = document.getElementById('appt-cliente');
+                selectCli.innerHTML = '<option value="">-- Selecione o Cliente --</option>';
+                clientes.forEach(c => selectCli.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+
+                const selectSrv = document.getElementById('appt-servico');
+                selectSrv.innerHTML = '<option value="">-- Selecione o Serviço --</option>';
+                servicos.forEach(s => selectSrv.innerHTML += `<option value="${s.id}" data-price="${s.price}">${s.name} (R$ ${s.price.toFixed(2)})</option>`);
+
+                const selectProf = document.getElementById('appt-profissional');
+                selectProf.innerHTML = '<option value="">-- Selecione o Profissional --</option>';
+                profissionais.forEach(p => selectProf.innerHTML += `<option value="${p.id}">${p.name}</option>`);
+            } catch (err) { console.error(err); }
+        }
+
+        async function salvarAgendamento(event) {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+            const sSelect = document.getElementById('appt-servico');
+            const payload = {
+                client_id: document.getElementById('appt-cliente').value,
+                service_id: sSelect.value,
+                professional_id: document.getElementById('appt-profissional').value,
+                date: document.getElementById('appt-data').value,
+                time: document.getElementById('appt-hora').value,
+                price: parseFloat(sSelect.options[sSelect.selectedIndex].getAttribute('data-price') || 0)
+            };
+            try {
+                const res = await fetch(`${API_URL}/appointments`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) { fecharModal('modal-agendamento'); carregarAgenda(); }
+            } catch (err) { console.error(err); }
+        }
+
+      async function carregarEstoque() {
+    const token = localStorage.getItem('token'); 
+    
+    try {
+        const res = await fetch(`${API_URL}/products`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            console.warn(`Servidor retornou erro ${res.status} ao carregar estoque.`);
+            return;
+        }
+
+        const products = await res.json();
+        const tbody = document.getElementById('tabela-estoque');
+        if (tbody) tbody.innerHTML = '';
+
+        if (Array.isArray(products)) {
+            products.forEach(p => {
+                const row = document.createElement('tr');
+                const isCritico = p.quantity <= p.min_quantity;
+                row.innerHTML = `
+                    <td class="p-4 font-semibold text-slate-800">${p.name}</td>
+                    <td class="p-4 font-bold ${isCritico ? 'text-rose-600' : 'text-slate-700'}">${p.quantity}</td>
+                    <td class="p-4 text-slate-500">${p.min_quantity}</td>
+                    <td class="p-4 text-slate-700">R$ ${(p.price_cost || 0).toFixed(2)}</td>
+                    <td class="p-4 text-center">
+                        <span class="text-xs font-bold px-2 py-1 rounded-md ${isCritico ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+                            ${p.status_estoque || (isCritico ? 'CRÍTICO' : 'OK')}
+                        </span>
+                    </td>
+                    <td class="p-4 text-center space-x-1">
+                        <button onclick="ajustarEstoque(${p.id}, 1)" class="bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded font-bold text-xs">+</button>
+                        <button onclick="ajustarEstoque(${p.id}, -1)" class="bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded font-bold text-xs">-</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    } catch (err) {
+        console.error("Erro ao carregar estoque:", err);
+    }
+}
+        async function ajustarEstoque(id, delta) {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`${API_URL}/products/${id}/quantity`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity_change: delta })
+                });
+                carregarEstoque();
+            } catch (err) { console.error(err); }
+        }
+
+        async function salvarProduto(event) {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+            const payload = {
+                name: document.getElementById('prod-nome').value,
+                quantity: parseInt(document.getElementById('prod-qtd').value),
+                min_quantity: parseInt(document.getElementById('prod-min').value),
+                price_cost: parseFloat(document.getElementById('prod-custo').value)
+            };
+            try {
+                const res = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) { fecharModal('modal-produto'); carregarEstoque(); }
+            } catch (err) { console.error(err); }
+        }
+
+        async function carregarFinanceiro() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_URL}/financial`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const resData = await res.json();
+                document.getElementById('fin-entradas').innerText = `R$ ${resData.resumo.total_entradas.toFixed(2)}`;
+                document.getElementById('fin-saidas').innerText = `R$ ${resData.resumo.total_despesas.toFixed(2)}`;
+                document.getElementById('fin-saldo').innerText = `R$ ${resData.resumo.saldo_atual.toFixed(2)}`;
+                const tbody = document.getElementById('tabela-financeiro');
+                tbody.innerHTML = '';
+                resData.transactions.forEach(t => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td class="p-4">${formatarDataBR(t.date.split('T')[0])}</td><td class="p-4 font-semibold">${t.description}</td><td class="p-4">${t.category}</td><td class="p-4 font-bold ${t.type === 'entry' ? 'text-emerald-600' : 'text-rose-600'}">${t.type === 'entry' ? 'Entrada' : 'Saída'}</td><td class="p-4 text-right font-semibold">R$ ${t.amount.toFixed(2)}</td>`;
+                    tbody.appendChild(row);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function salvarFinanceiro(event) {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+            const payload = {
+                type: document.getElementById('fin-tipo').value,
+                description: document.getElementById('fin-descricao').value,
+                category: document.getElementById('fin-categoria').value,
+                date: document.getElementById('fin-data').value,
+                amount: parseFloat(document.getElementById('fin-valor').value)
+            };
+            try {
+                const res = await fetch(`${API_URL}/financial`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) { fecharModal('modal-financeiro'); carregarFinanceiro(); }
+            } catch (err) { console.error(err); }
+        }
+        // --- CONTROLE DE MODAIS ---
+function abrirModalAgendamento() {
+    const modal = document.getElementById('modal-agendamento');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function abrirModalServico() {
+    const form = document.getElementById('form-servico');
+    if (form) form.reset();
+    const modal = document.getElementById('modal-servico');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function abrirModalProfissional() {
+    const form = document.getElementById('form-profissional');
+    if (form) form.reset();
+    const modal = document.getElementById('modal-profissional');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function abrirModalProduto() {
+    const form = document.getElementById('form-produto');
+    if (form) form.reset();
+    const modal = document.getElementById('modal-produto');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function abrirModalFinanceiro() {
+    const form = document.getElementById('form-financeiro');
+    if (form) form.reset();
+    const modal = document.getElementById('modal-financeiro');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function fecharModal(idModal) {
+    const modal = document.getElementById(idModal);
+    if (modal) modal.classList.add('hidden');
+}
+
+// --- SUBMISSÕES DE FORMULÁRIOS ---
+// --- CADASTRAR SERVIÇO CORRIGIDO ---
+    async function salvarServico(event) {
+    event.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    // Captura se o checkbox de adiantamento está marcado (ou 0/1)
+    const cobraAdiantamento = document.getElementById('srv-adiantamento-check')?.checked ? 1 : 0;
+    const valorAdiantamento = parseFloat(document.getElementById('srv-adiantamento-valor')?.value || 0);
+
+    const body = {
+        name: document.getElementById('srv-nome')?.value,
+        price: parseFloat(document.getElementById('srv-preco')?.value || 0),
+        duration: parseInt(document.getElementById('srv-duracao')?.value || 30),
+        return_days: parseInt(document.getElementById('srv-retorno')?.value || 30),
+        charge_advance: cobraAdiantamento,
+        advance_value: cobraAdiantamento ? valorAdiantamento : 0.0
+    };
+
+    try {
+        const res = await fetch(`${API_URL}/services`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+        
+        if (res.ok) {
+            fecharModal('modal-servico');
+            carDropdownsAgendamento();
+            if (document.getElementById('aba-configuracoes') && !document.getElementById('aba-configuracoes').classList.contains('hidden')) {
+                carregarConfiguracoes();
+            }
+        } else {
+            const data = await res.json();
+            alert(data.error || 'Erro ao salvar serviço.');
+        }
+    } catch (err) {
+        console.error('Erro na requisição:', err);
+    }
+}
+// --- CADASTRAR PROFISSIONAL CORRIGIDO ---
+async function salvarProfissional(event) {
+    event.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    const body = {
+        name: document.getElementById('prof-nome')?.value,
+        phone: document.getElementById('prof-telefone')?.value,
+        commission_rate: parseFloat(document.getElementById('prof-comissao')?.value || 0.0)
+    };
+
+    try {
+        const res = await fetch(`${API_URL}/professionals`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+        
+        if (res.ok) {
+            fecharModal('modal-profissional');
+            carDropdownsAgendamento();
+        } else {
+            const data = await res.json();
+            alert(data.error || 'Erro ao cadastrar profissional.');
+        }
+    } catch (err) {
+        console.error('Erro na requisição:', err);
+    }
+}
+
+// --- GRADE DE HORÁRIOS CORRIGIDA ---
+function adicionarHorarioNaGrade() {
+    const inputHora = document.getElementById('novo-horario-input');
+    if (!inputHora || !inputHora.value) {
+        alert('Selecione um horário válido.');
+        return;
+    }
+
+    const hora = inputHora.value;
+    const jaExiste = gradeHorariaLocal.some(item => item.time === hora);
+
+    if (jaExiste) {
+        alert('Este horário já foi adicionado.');
+        return;
+    }
+
+    gradeHorariaLocal.push({ time: hora, active: 1 });
+    gradeHorariaLocal.sort((a, b) => a.time.localeCompare(b.time));
+    inputHora.value = '';
+    renderizarGradeHorarios();
+}
+
+function renderizarGradeHorarios() {
+    const container = document.getElementById('container-grade-horarios');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (gradeHorariaLocal.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400 p-2 col-span-3">Nenhum horário cadastrado.</span>';
+        return;
+    }
+
+    gradeHorariaLocal.forEach((item, index) => {
+        const chip = document.createElement('div');
+        chip.className = 'inline-flex items-center justify-between bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-indigo-200';
+        chip.innerHTML = `
+            <span>${item.time}</span>
+            <button type="button" onclick="removerHorarioGrade(${index})" class="text-indigo-400 hover:text-rose-600 font-bold ml-1">&times;</button>
+        `;
+        container.appendChild(chip);
+    });
+}
+
+function removerHorarioGrade(index) {
+    gradeHorariaLocal.splice(index, 1);
+    renderizarGradeHorarios();
+}
+
+async function salvarGradeHoraria() {
+    const token = localStorage.getItem('token');
+    
+    if (gradeHorariaLocal.length === 0) {
+        alert('Adicione pelo menos um horário antes de salvar.');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/salon/schedule-grid`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ schedules: gradeHorariaLocal })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert('Grade de horários salva com sucesso!');
+        } else {
+            alert(data.error || 'Erro ao salvar horários.');
+        }
+    } catch (err) {
+        console.error('Erro ao salvar horários:', err);
+        alert('Erro de conexão ao salvar grade.');
+    }
+}
+     // --- CARREGAR PAINEL INTELIGENTE (IA, Churn, Lembretes) ---
+async function carregarPainelInteligente() {
+    const token = localStorage.getItem('token');
+    const headers = { 'Authorization': `Bearer ${token}` };
+    try {
+        const [resPred, resChurn, resFoco, resLembretes] = await Promise.all([
+            fetch(`${API_URL}/analytics/predictions`, { headers }).then(r => r.json()),
+            fetch(`${API_URL}/crm/churn-risks`, { headers }).then(r => r.json()),
+            fetch(`${API_URL}/analytics/operational-focus`, { headers }).then(r => r.json()),
+            fetch(`${API_URL}/analytics/reminders`, { headers }).then(r => r.json())
+        ]);
+
+        // 1. Predições de Faturamento
+        const fatAtualEl = document.getElementById('pred-faturamento');
+        const fatIaEl = document.getElementById('pred-ia');
+        const insightEl = document.getElementById('pred-insight');
+
+        if (fatAtualEl) fatAtualEl.innerText = `R$ ${(resPred.faturamento_atual || 0).toFixed(2)}`;
+        if (fatIaEl) fatIaEl.innerText = `R$ ${(resPred.faturamento_preditivo || 0).toFixed(2)}`;
+        if (insightEl) insightEl.innerText = resPred.insight || 'Sem dados suficientes para projeção.';
+
+        // 2. Foco Operacional
+        const focoEl = document.getElementById('foco-operacional-texto');
+        if (focoEl) focoEl.innerText = resFoco.foco || 'Serviços Gerais';
+
+        // 3. Lembretes do Dia (WhatsApp)
+        const divLembretes = document.getElementById('container-lembretes');
+        if (divLembretes) {
+            divLembretes.innerHTML = '';
+            if (!resLembretes || resLembretes.length === 0) {
+                divLembretes.innerHTML = '<p class="text-xs text-slate-400">Nenhum atendimento pendente para hoje.</p>';
+            } else {
+                resLembretes.forEach(l => {
+                    divLembretes.innerHTML += `
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">${l.client_name} - <span class="text-indigo-600">${l.time}</span></p>
+                                <p class="text-xs text-slate-500">${l.service_name}</p>
+                            </div>
+                            <a href="${l.whatsapp_url}" target="_blank" class="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all" title="Enviar WhatsApp">
+                                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                            </a>
+                        </div>`;
+                });
+            }
+        }
+
+        // 4. Clientes Ausentes (Risco de Churn)
+        const divChurn = document.getElementById('container-churn');
+        if (divChurn) {
+            divChurn.innerHTML = '';
+            if (!resChurn || resChurn.length === 0) {
+                divChurn.innerHTML = '<p class="text-xs text-slate-400">Nenhum cliente em risco de perda no momento.</p>';
+            } else {
+                resChurn.forEach(c => {
+                    const foneLimpo = (c.client_phone || '').replace(/\D/g, '');
+                    const waUrl = foneLimpo ? `https://wa.me/55${foneLimpo}?text=${encodeURIComponent(c.suggested_message)}` : '#';
+                    divChurn.innerHTML += `
+                        <div class="p-3 bg-rose-50/50 border border-rose-200 rounded-lg flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">${c.client_name}</p>
+                                <p class="text-xs text-rose-600">Último serviço: ${c.last_service || 'N/A'}</p>
+                            </div>
+                            <a href="${waUrl}" target="_blank" class="p-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition-all" title="Recuperar cliente">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </a>
+                        </div>`;
+                });
+            }
+        }
+
+        // Atualiza os ícones do Lucide após injetar o HTML
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    } catch (err) {
+        console.error("Erro ao carregar painel inteligente:", err);
+    }
+}
+</script>
+</body>
+</html>
