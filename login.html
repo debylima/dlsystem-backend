@@ -101,9 +101,9 @@
             }
         }
 
-        async function handleAuth(event) {
+       async function handleAuth(event) {
             event.preventDefault();
-
+            console.log("Botão clicado! Tentando logar..."); // <--- Adicione esta linha
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             
