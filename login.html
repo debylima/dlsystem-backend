@@ -21,7 +21,7 @@
         </div>
 
         <!-- FORMULÁRIO DE AUTENTICAÇÃO -->
-        <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+        <form id="auth-form" class="space-y-4"></form>
             
             <!-- CAMPO NOME (Escondido por padrão, aparece apenas no Cadastro) -->
             <div id="container-nome" class="hidden space-y-1.5">
@@ -50,8 +50,11 @@
                 </div>
             </div>
 
-            <!-- BOTÃO DE SUBMIT -->
-            <button type="submit" id="auth-submit-btn" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-indigo-100 text-sm mt-2">
+         <!-- BOTÃO DE SUBMIT -->
+<button type="button" onclick="handleAuth(event)" id="auth-submit-btn" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-indigo-100 text-sm mt-2">
+    <span id="btn-text">Entrar no Sistema</span>
+    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+</button>
                 <span id="btn-text">Entrar no Sistema</span>
                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </button>
