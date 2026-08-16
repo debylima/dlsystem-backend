@@ -864,6 +864,14 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
 });
 
 // Inicialização do Servidor Express
-app.listen(PORT, () => {
-    console.log(`Servidor DLSystem rodando na porta ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+
+// Se não estiver na Vercel, inicia o listen localmente
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Servidor DLSystem rodando na porta ${PORT}`);
+    });
+}
+
+// Exporta o app para a Vercel conseguir gerenciar as rotas
+module.exports = app;
