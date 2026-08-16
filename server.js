@@ -866,12 +866,10 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
 // Inicialização do Servidor Express
 const PORT = process.env.PORT || 3000;
 
-// Se não estiver na Vercel, inicia o listen localmente para testes no PC
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     app.listen(PORT, () => {
-        console.log(`Servidor DLSystem rodando na porta ${PORT}`);
+        console.log(`Servidor rodando na porta ${PORT}`);
     });
 }
 
-// ESSENCIAL PARA A VERCEL: Exporta o app para o Vercel gerenciar as rotas
 module.exports = app;
