@@ -24,11 +24,17 @@ app.get('/login.html', (req, res) => {
     res.sendFile(__dirname + '/login.html');
 });
 // Conexão com o Banco de Dados SQLite
-const db = new sqlite3.Database('./dlsystem.db', (err) => {
+// Conexão com o Banco de Dados SQLite
+const path = require('path');
+
+// Se estiver na Vercel, usa o diretório temporário /tmp. Se estiver local, usa a pasta atual.
+const dbPath = process.env.VERCEL ? path.join('/tmp', 'dlsystem.db') : './dlsystem.db';
+
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Erro ao conectar ao banco de dados:', err.message);
     } else {
-        console.log('Conectado ao banco de dados SQLite com sucesso.');
+        console.log('Conectado ao banco de dados SQLite com sucesso em:', dbPath);
     }
 });
 
