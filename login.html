@@ -115,8 +115,7 @@
                 payload.name = document.getElementById('auth-name').value;
             }
 
-            try {
-                
+           try {
                 const url = endpoint;
                 console.log("Enviando requisição para:", url);
 
@@ -126,8 +125,16 @@
                     body: JSON.stringify(payload)
                 });
 
-                const data = await response.json();
-                console.log("Resposta recebida do servidor:", data);
+                // Pega a resposta como texto bruto primeiro para investigarmos
+                const responseText = await response.text();
+                console.log("Resposta bruta do servidor:", responseText);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error("O servidor retornou HTML/Texto em vez de JSON: " + responseText.substring(0, 100));
+                }
 
                 if (!response.ok) {
                     alert(data.error || 'Ocorreu um erro na autenticação.');
@@ -141,7 +148,7 @@
 
             } catch (err) {
                 console.error("Erro capturado no catch:", err);
-                alert("Erro de conexão com o servidor: " + err.message);
+                alert("Erro: " + err.message);
             }
         }
     </script>
