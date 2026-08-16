@@ -864,7 +864,6 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
 });
 
 // Inicialização do Servidor Express
-PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+    console.log(`Servidor rodando na porta ${process.env.PORT || 3000}`);
 });
