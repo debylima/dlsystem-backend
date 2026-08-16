@@ -865,11 +865,6 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
 
 // Inicialização do Servidor Express
 const PORT = process.env.PORT || 3000;
-
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-    app.listen(PORT, () => {
-        console.log(`Servidor rodando na porta ${PORT}`);
-    });
-}
-
-module.exports = app;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+});
