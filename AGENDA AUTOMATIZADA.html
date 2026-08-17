@@ -1266,18 +1266,19 @@ async function carregarPainelInteligente() {
 }
 </script>
 <script>
-    console.log("O script da página carregou com sucesso!");
-    
-    // Testa se o botão de cadastrar foi encontrado
-    const btnCadastrar = document.querySelector('button[type="submit"]') || document.querySelector('#btnCadastrar');
-    if (btnCadastrar) {
-        console.log("Botão de cadastro encontrado na página!");
-        btnCadastrar.addEventListener('click', () => {
-            console.log("O botão de cadastrar foi clicado!");
-        });
-    } else {
-        console.log("Atenção: O botão de cadastro não foi encontrado com esse seletor.");
-    }
+    console.log("Script da agenda carregado com sucesso!");
+
+    const botoes = document.querySelectorAll('button');
+
+    botoes.forEach(botao => {
+        const texto = botao.textContent.trim();
+
+        if (texto === 'Cadastrar' || texto === 'Agendar' || texto === 'Registrar') {
+            botao.addEventListener('click', async () => {
+                console.log(`Botão "${texto}" clicado!`);
+            });
+        }
+    });
 </script>
 </body>
 </html>
