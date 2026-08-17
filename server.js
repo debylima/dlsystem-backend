@@ -26,7 +26,6 @@ app.get('/login.html', (req, res) => {
 // ROTAS DE ATALHO PARA A AGENDA PÚBLICA
 // ==========================================
 app.get('/salon-settings', (req, res) => {
-    // Redireciona internamente para a rota pública correta de configurações
     req.url = '/api/public/salon-settings' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
     app.handle(req, res);
 });
@@ -329,61 +328,27 @@ app.get('/api/settings', handleGetSettings);
 app.get('/api/salon/settings', handleGetSettings);
 
 app.post('/api/salon/settings', authenticateToken, (req, res) => {
-    const { charge_advance, advance_value, explanatory_message, pix_key, advance_services_ids } = req.body;
+    const { charge_advance, advance_value, explanatory_message, pix_key, advance_services_ids, support_phone } = req.body;
     
     const stringIdsServicos = Array.isArray(advance_services_ids)
         ? JSON.stringify(advance_services_ids)
         : (typeof advance_services_ids === 'string' ? advance_services_ids : '[]');
 
-    db.run(`INSERT INTO salon_settings (user_id, charge_advance, advance_value, explanatory_message, pix_key, advance_services_ids)
-            VALUES (?, ?, ?, ?, ?, ?)
+    db.run(`INSERT INTO salon_settings (user_id, charge_advance, advance_value, explanatory_message, pix_key, advance_services_ids, support_phone)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET 
                 charge_advance = excluded.charge_advance,
                 advance_value = excluded.advance_value,
                 explanatory_message = excluded.explanatory_message,
                 pix_key = excluded.pix_key,
-                advance_services_ids = excluded.advance_services_ids`,
-        [req.user.id, charge_advance ? 1 : 0, advance_value || 0.0, explanatory_message, pix_key, stringIdsServicos],
+                advance_services_ids = excluded.advance_services_ids,
+                support_phone = excluded.support_phone`,
+        [req.user.id, charge_advance ? 1 : 0, advance_value || 0.0, explanatory_message, pix_key, stringIdsServicos, support_phone],
         function(err) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ success: true });
         }
     );
-});
-
-app.get('/api/salon/schedule-grid', (req, res) => {
-    const userId = req.query.user_id || 1;
-    db.all(`SELECT time, active FROM salon_schedules WHERE user_id = ?`, [userId], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        
-        if (!rows || rows.length === 0) {
-            const padrao = ["09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30"].map(h => ({ time: h, active: 1 }));
-            return res.json(padrao);
-        }
-        res.json(rows);
-    });
-});
-
-app.post('/api/salon/schedule-grid', authenticateToken, (req, res) => {
-    const { schedules } = req.body; 
-    if (!Array.isArray(schedules)) return res.status(400).json({ error: "Formato de dados inválido." });
-
-    db.run(`UPDATE salon_schedules SET active = 0 WHERE user_id = ?`, [req.user.id], (err) => {
-        if (err) return res.status(500).json({ error: "Erro ao resetar grade antiga." });
-
-        const stmt = db.prepare(`INSERT INTO salon_schedules (user_id, time, active) VALUES (?, ?, ?)
-                                 ON CONFLICT(user_id, time) DO UPDATE SET active = excluded.active`);
-
-        db.serialize(() => {
-            schedules.forEach(item => {
-                stmt.run([req.user.id, item.time, item.active ? 1 : 0]);
-            });
-            stmt.finalize((err) => {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json({ success: true });
-            });
-        });
-    });
 });
 
 // ==========================================
@@ -861,19 +826,46 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
     db.serialize(() => {
         db.run('BEGIN TRANSACTION');
 
-        const updateQuery = `UPDATE appointments SET status = 'concluded' WHERE id = ? AND user_id = ?`;
+        // 1. Busca os dados do agendamento (preço, serviço e profissional)
+        const selectQuery = `SELECT * FROM appointments WHERE id = ? AND user_id = ?`;
         
-        db.run(updateQuery, [appointmentId, userId], function(err) {
-            if (err) {
+        db.get(selectQuery, [appointmentId, userId], (err, appt) => {
+            if (err || !appt) {
                 db.run('ROLLBACK');
-                return res.status(500).json({ error: 'Erro ao atualizar agendamento.' });
+                return res.status(404).json({ error: 'Agendamento não encontrado.' });
             }
 
-            db.run('COMMIT', (commitErr) => {
-                if (commitErr) {
-                    return res.status(500).json({ error: 'Erro ao finalizar transação.' });
+            // 2. Atualiza o status do agendamento para concluído
+            const updateQuery = `UPDATE appointments SET status = 'concluded' WHERE id = ? AND user_id = ?`;
+            
+            db.run(updateQuery, [appointmentId, userId], function(updateErr) {
+                if (updateErr) {
+                    db.run('ROLLBACK');
+                    return res.status(500).json({ error: 'Erro ao atualizar agendamento.' });
                 }
-                res.json({ success: true, message: 'Agendamento concluído com sucesso!' });
+
+                // 3. Calcula a comissão (exemplo: 50% do valor do serviço, ajuste se necessário)
+                const valorServico = appt.price || 0;
+                const valorComissao = valorServico * 0.50; 
+                const descricaoCaixa = `Comissão referente ao atendimento #${appt.id} - ${appt.service_name || 'Serviço'}`;
+
+                // 4. Insere o valor da comissão no fluxo de caixa (como saída/despesa)
+                const insertCashQuery = `INSERT INTO cash_flow (user_id, description, type, amount, date) VALUES (?, ?, 'expense', ?, datetime('now'))`;
+
+                db.run(insertCashQuery, [userId, descricaoCaixa, valorComissao], (cashErr) => {
+                    if (cashErr) {
+                        db.run('ROLLBACK');
+                        return res.status(500).json({ error: 'Erro ao registrar comissão no fluxo de caixa.' });
+                    }
+
+                    // 5. Finaliza a transação com sucesso
+                    db.run('COMMIT', (commitErr) => {
+                        if (commitErr) {
+                            return res.status(500).json({ error: 'Erro ao finalizar transação.' });
+                        }
+                        res.json({ success: true, message: 'Agendamento concluído e comissão lançada no caixa!' });
+                    });
+                });
             });
         });
     });
