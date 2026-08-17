@@ -811,14 +811,25 @@ app.get('/api/public/professionals', (req, res) => {
 // 4. Rota para calcular os horários livres
 app.get('/api/public/available-slots', (req, res) => {
     const userId = req.query.user_id || 1;
-    const { date } = req.query; // Ex: "2026-06-06"
+    let { date } = req.query; // Ex: "2026-06-06" ou "06/06/2026"
 
     if (!date) return res.status(400).json({ error: "Data obrigatória." });
+
+    // Se a data vier no formato brasileiro (DD/MM/YYYY), converte para YYYY-MM-DD
+    if (date.includes('/')) {
+        const partes = date.split('/');
+        if (partes.length === 3) {
+            date = `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
+    }
+
     const dataObj = new Date(date + 'T00:00:00');
+    if (isNaN(dataObj.getTime())) {
+        return res.status(400).json({ error: "Formato de data inválido." });
+    }
+
     const diaSemana = dataObj.getDay(); // 0 a 6
 
-    // 2. Buscar a grade de horários específica para esse dia da semana no salão
-    // (Caso sua tabela use números para o dia da semana: 0-6)
     const sql = `SELECT time FROM salon_schedules WHERE user_id = ? AND day_of_week = ? AND active = 1`;
 
     db.all(sql, [userId, diaSemana], (err, grid) => {
@@ -826,9 +837,8 @@ app.get('/api/public/available-slots', (req, res) => {
 
         const todosHorarios = grid.length > 0
             ? grid.map(h => h.time)
-            : []; // Evite deixar horários fixos de exemplo na pública para não confundir o cliente
+            : []; 
 
-        // O restante da sua lógica de filtragem de horários já agendados continua daqui...
         return res.json({ horarios: todosHorarios });
     });
 });

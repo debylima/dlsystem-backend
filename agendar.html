@@ -175,7 +175,9 @@
         async function carregarServicos() {
             const select = document.getElementById('service_id');
             try {
-                const res = await fetch(`${API_BASE}/api/public/services?user_id=1`);
+                const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id') || urlParams.get('user_id') || '1';
+    const res = await fetch(`${API_BASE}/salon-settings?user_id=${userId}`);
                 const servicos = await res.json();
                 select.innerHTML = '<option value="">Selecione um serviço</option>';
                 servicos.forEach(s => {
