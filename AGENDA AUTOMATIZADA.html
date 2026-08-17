@@ -358,9 +358,9 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" onclick="fecharModal('modal-agendamento')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
-                    <button type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Agendar</button>
-                </div>
+    <button type="button" onclick="fecharModal('modal-agendamento')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Agendar</button>
+</div>
             </form>
         </div>
     </div>
@@ -396,9 +396,9 @@
                 <input type="number" step="0.01" id="srv-adiantamento-valor" placeholder="Valor do Sinal (R$)" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none text-sm">
             </div>
             <div class="flex justify-end gap-3 pt-4">
-                <button type="button" onclick="fecharModal('modal-servico')" class="px-4 py-2 bg-slate-100 rounded-lg text-slate-700 font-medium">Cancelar</button>
-                <button type="button" class="px-4 py-2 bg-indigo-600 rounded-lg text-white font-medium">Cadastrar</button>
-            </div>
+    <button type="button" onclick="fecharModal('modal-servico')" class="px-4 py-2 bg-slate-100 rounded-lg text-slate-700 font-medium">Cancelar</button>
+    <button type="submit" class="px-4 py-2 bg-indigo-600 rounded-lg text-white font-medium">Cadastrar</button>
+</div>
         </form>
     </div>
 </div>
@@ -421,22 +421,18 @@
                     <input type="number" step="0.1" id="prof-comissao" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
                 </div>
                 <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" onclick="fecharModal('modal-profissional')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
-                    <button type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Cadastrar</button>
-                </div>
+    <button type="button" onclick="fecharModal('modal-profissional')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Cadastrar</button>
+</div>
             </form>
         </div>
     </div>
 
     <!-- PRODUTO -->
-    <div id="modal-produto" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
-            <h3 class="text-lg font-bold text-gray-800">Novo Produto</h3>
-            <form id="form-produto" class="space-y-3" onsubmit="salvarProduto(event)">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Nome do Produto</label>
-                    <input type="text" id="prod-nome" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
-                </div>
+    <div class="flex justify-end gap-3 pt-4">
+    <button type="button" onclick="fecharModal('modal-produto')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Cadastrar</button>
+</div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Quantidade</label>
@@ -488,9 +484,9 @@
                     <input type="number" step="0.01" id="fin-valor" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" required>
                 </div>
                 <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" onclick="fecharModal('modal-financeiro')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
-                    <button type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Registrar</button>
-                </div>
+    <button type="button" onclick="fecharModal('modal-financeiro')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">Cancelar</button>
+    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium">Registrar</button>
+</div>
             </form>
         </div>
     </div>
@@ -1264,21 +1260,6 @@ async function carregarPainelInteligente() {
         console.error("Erro ao carregar painel inteligente:", err);
     }
 }
-</script>
-<script>
-    console.log("Script da agenda carregado com sucesso!");
-
-    const botoes = document.querySelectorAll('button');
-
-    botoes.forEach(botao => {
-        const texto = botao.textContent.trim();
-
-        if (texto === 'Cadastrar' || texto === 'Agendar' || texto === 'Registrar') {
-            botao.addEventListener('click', async () => {
-                console.log(`Botão "${texto}" clicado!`);
-            });
-        }
-    });
 </script>
 </body>
 </html>
