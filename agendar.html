@@ -172,37 +172,32 @@
             }
         }
 
-        async function carregarServicos() {
-            const select = document.getElementById('service_id');
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('id') || urlParams.get('user_id') || '1';
-    const res = await fetch(`${API_BASE}/salon-settings?user_id=${userId}`);
-                const servicos = await res.json();
-                select.innerHTML = '<option value="">Selecione um serviço</option>';
-                servicos.forEach(s => {
-                    select.innerHTML += `<option value="${s.id}">${s.name} - R$ ${Number(s.price).toFixed(2)}</option>`;
-                });
-            } catch (err) { select.innerHTML = '<option value="">Erro ao carregar serviços</option>'; }
+       async function carregarServicos() {
+    const select = document.getElementById('service_id');
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id') || urlParams.get('user_id') || '1';
+        
+        // CORREÇÃO: Buscando na rota correta de serviços públicos do salão
+        const res = await fetch(`${API_BASE}/public/services?user_id=${userId}`);
+        
+        if (!res.ok) throw new Error("Erro ao buscar serviços");
+        
+        const servicos = await res.json();
+        select.innerHTML = '<option value="">Selecione um serviço</option>';
+        
+        if (Array.isArray(servicos) && servicos.length > 0) {
+            servicos.forEach(s => {
+                select.innerHTML += `<option value="${s.id}">${s.name} - R$ ${Number(s.price).toFixed(2)}</option>`;
+            });
+        } else {
+            select.innerHTML = '<option value="">Nenhum serviço cadastrado</option>';
         }
-
-        document.getElementById('service_id').addEventListener('change', function() {
-            const serviceId = this.value;
-            const avisoBox = document.getElementById('avisoServicoSinal');
-            
-            if (!serviceId) {
-                avisoBox.classList.add('hidden');
-                return;
-            }
-
-            if (configSinal && Number(configSinal.charge_advance) === 1) {
-                document.getElementById('textoAvisoServico').textContent = configSinal.explanatory_message || "Este serviço exige um valor de sinal para garantir o horário na agenda!";
-                avisoBox.classList.remove('hidden');
-                lucide.createIcons();
-            } else {
-                avisoBox.classList.add('hidden');
-            }
-        });
+    } catch (err) { 
+        console.error(err);
+        select.innerHTML = '<option value="">Erro ao carregar serviços</option>'; 
+    }
+}
 
         async function carregarProfissionais() {
             const select = document.getElementById('professional_id');
