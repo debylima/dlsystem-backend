@@ -597,10 +597,9 @@ if (selectServico) {
             const headers = { 'Authorization': `Bearer ${token}` };
 
             try {
-                const srvRes = await fetch(`${API_URL}/services`, { headers });
-                listaServicosCadastrados = await srvRes.json();
+                const srvRes = await fetch(`${API_URL}/api/services`, { headers });
 
-                const resConfig = await fetch(`${API_URL}/salon/settings`, { headers });
+                const resConfig = await fetch(`${API_URL}/api/salon/settings`, { headers });
                 const config = await resConfig.json();
 
                 document.getElementById('config-sinal-ativo').checked = config.charge_advance === 1;
@@ -615,7 +614,7 @@ if (selectServico) {
                 montarListaCheckboxesServicos(config.advance_services_ids || []);
                 alternarVisibilidadeServicosSinal();
 
-                const resGrid = await fetch(`${API_URL}/salon/schedule-grid`, { headers });
+               const resGrid = await fetch(`${API_URL}/api/salon/schedule-grid`, { headers });
                 gradeHorariaLocal = await resGrid.json() || [];
                 renderizarGradeHorarios();
 
@@ -668,7 +667,7 @@ if (selectServico) {
             };
 
             try {
-                const res = await fetch(`${API_URL}/salon/settings`, {
+                const res = await fetch(`${API_URL}/api/salon/settings`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -727,7 +726,7 @@ if (selectServico) {
     const dataFiltro = document.getElementById('filtro-data').value;
     
     try {
-        const res = await fetch(`${API_URL}/appointments?date=${dataFiltro}`, {
+        const res = await fetch(`${API_URL}/api/appointments?date=${dataFiltro}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -813,7 +812,7 @@ if (selectServico) {
         async function mudarStatusAgendamento(id, novoStatus) {
             const token = localStorage.getItem('token');
             try {
-                const res = await fetch(`${API_URL}/appointments/${id}/status`, {
+                const res = await fetch(`${API_URL}/api/appointments/${id}/status`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: novoStatus })
@@ -826,7 +825,7 @@ if (selectServico) {
             if (!confirm("Confirmar que você recebeu o Pix de sinal para este agendamento?")) return;
             const token = localStorage.getItem('token');
             try {
-                const res = await fetch(`${API_URL}/appointments/${id}/payment`, {
+                const res = await fetch(`${API_URL}/api/appointments/${id}/payment`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ payment_status: 'paid' })
@@ -840,9 +839,9 @@ if (selectServico) {
             const headers = { 'Authorization': `Bearer ${token}` };
             try {
                 const [clientes, servicos, profissionais] = await Promise.all([
-                    fetch(`${API_URL}/clients`, { headers }).then(r => r.json()),
-                    fetch(`${API_URL}/services`, { headers }).then(r => r.json()),
-                    fetch(`${API_URL}/professionals`, { headers }).then(r => r.json())
+                    fetch(`${API_URL}/api/clients`, { headers }).then(r => r.json()),
+                    fetch(`${API_URL}/api/services`, { headers }).then(r => r.json()),
+                    fetch(`${API_URL}/api/professionals`, { headers }).then(r => r.json())
                 ]);
                 const selectCli = document.getElementById('appt-cliente');
                 selectCli.innerHTML = '<option value="">-- Selecione o Cliente --</option>';
@@ -871,7 +870,7 @@ if (selectServico) {
                 price: parseFloat(sSelect.options[sSelect.selectedIndex].getAttribute('data-price') || 0)
             };
             try {
-                const res = await fetch(`${API_URL}/appointments`, {
+                const res = await fetch(`${API_URL}/api/appointments`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -884,7 +883,7 @@ if (selectServico) {
     const token = localStorage.getItem('token'); 
     
     try {
-        const res = await fetch(`${API_URL}/products`, {
+        const res = await fetch(`${API_URL}/api/products`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -929,7 +928,7 @@ if (selectServico) {
         async function ajustarEstoque(id, delta) {
             const token = localStorage.getItem('token');
             try {
-                await fetch(`${API_URL}/products/${id}/quantity`, {
+                await fetch(`${API_URL}/api/products/${id}/quantity`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quantity_change: delta })
@@ -948,7 +947,7 @@ if (selectServico) {
                 price_cost: parseFloat(document.getElementById('prod-custo').value)
             };
             try {
-                const res = await fetch(`${API_URL}/products`, {
+                const res = await fetch(`${API_URL}/api/products`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -960,7 +959,7 @@ if (selectServico) {
         async function carregarFinanceiro() {
             const token = localStorage.getItem('token');
             try {
-                const res = await fetch(`${API_URL}/financial`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`${API_URL}/api/financial`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const resData = await res.json();
                 document.getElementById('fin-entradas').innerText = `R$ ${resData.resumo.total_entradas.toFixed(2)}`;
                 document.getElementById('fin-saidas').innerText = `R$ ${resData.resumo.total_despesas.toFixed(2)}`;
@@ -986,7 +985,7 @@ if (selectServico) {
                 amount: parseFloat(document.getElementById('fin-valor').value)
             };
             try {
-                const res = await fetch(`${API_URL}/financial`, {
+                const res = await fetch(`${API_URL}/api/financial`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -1053,7 +1052,7 @@ function fecharModal(idModal) {
     };
 
     try {
-        const res = await fetch(`${API_URL}/services`, {
+        const res = await fetch(`${API_URL}/api/services`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1088,7 +1087,7 @@ async function salvarProfissional(event) {
     };
 
     try {
-        const res = await fetch(`${API_URL}/professionals`, {
+        const res = await fetch(`${API_URL}/api/professionals`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1166,7 +1165,7 @@ async function salvarGradeHoraria() {
     }
 
     try {
-        const res = await fetch(`${API_URL}/salon/schedule-grid`, {
+        const res = await fetch(`${API_URL}/api/salon/schedule-grid`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1192,10 +1191,10 @@ async function carregarPainelInteligente() {
     const headers = { 'Authorization': `Bearer ${token}` };
     try {
         const [resPred, resChurn, resFoco, resLembretes] = await Promise.all([
-            fetch(`${API_URL}/analytics/predictions`, { headers }).then(r => r.json()),
-            fetch(`${API_URL}/crm/churn-risks`, { headers }).then(r => r.json()),
-            fetch(`${API_URL}/analytics/operational-focus`, { headers }).then(r => r.json()),
-            fetch(`${API_URL}/analytics/reminders`, { headers }).then(r => r.json())
+            fetch(`${API_URL}/api/analytics/predictions`, { headers }).then(r => r.json()),
+            fetch(`${API_URL}/api/crm/churn-risks`, { headers }).then(r => r.json()),
+            fetch(`${API_URL}/api/analytics/operational-focus`, { headers }).then(r => r.json()),
+            fetch(`${API_URL}/api/analytics/reminders`, { headers }).then(r => r.json())
         ]);
 
         // 1. Predições de Faturamento
