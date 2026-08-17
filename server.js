@@ -30,9 +30,14 @@ app.get('/salon-settings', (req, res) => {
     app.handle(req, res);
 });
 
-app.get('/servicos', (req, res) => {
-    req.url = '/api/public/services' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
-    app.handle(req, res);
+app.get(['/public/services', '/api/public/services'], (req, res) => {
+    const userId = req.query.user_id || 1;
+    const sql = `SELECT * FROM services WHERE user_id = ?`;
+    
+    db.all(sql, [userId], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
 });
 
 app.get('/profissionais', (req, res) => {
