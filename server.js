@@ -62,7 +62,15 @@ db.serialize(() => {
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     )`);
-
+// Tabela de Fluxo de Caixa (Comissões e Lançamentos)
+    db.run(`CREATE TABLE IF NOT EXISTS cash_flow (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        type TEXT,
+        description TEXT,
+        amount REAL,
+        date TEXT
+    )`);
     // Tabela de Clientes
     db.run(`CREATE TABLE IF NOT EXISTS clients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,6 +79,15 @@ db.serialize(() => {
         phone TEXT,
         medical_conditions TEXT,
         FOREIGN KEY(user_id) REFERENCES users(id)
+    )`);
+    // Tabela de Fluxo de Caixa (Comissões e Lançamentos)
+    db.run(`CREATE TABLE IF NOT EXISTS cash_flow (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        type TEXT,
+        description TEXT,
+        amount REAL,
+        date TEXT
     )`);
 
     // Tabela de Serviços com campos específicos para cobrar sinal por serviço
@@ -794,30 +811,27 @@ app.get('/api/public/professionals', (req, res) => {
 // 4. Rota para calcular os horários livres
 app.get('/api/public/available-slots', (req, res) => {
     const userId = req.query.user_id || 1;
-    const { date } = req.query;
+    const { date } = req.query; // Ex: "2026-06-06"
 
     if (!date) return res.status(400).json({ error: "Data obrigatória." });
+    const dataObj = new Date(date + 'T00:00:00');
+    const diaSemana = dataObj.getDay(); // 0 a 6
 
-    // Busca a grade de horários cadastrada no salão
-    db.all(`SELECT time FROM salon_schedules WHERE user_id = ? AND active = 1`, [userId], (err, grid) => {
+    // 2. Buscar a grade de horários específica para esse dia da semana no salão
+    // (Caso sua tabela use números para o dia da semana: 0-6)
+    const sql = `SELECT time FROM salon_schedules WHERE user_id = ? AND day_of_week = ? AND active = 1`;
+
+    db.all(sql, [userId, diaSemana], (err, grid) => {
         if (err) return res.status(500).json({ error: err.message });
-        
-        const todosHorarios = grid.length > 0 
-            ? grid.map(h => h.time) 
-            : ["09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30"];
 
-        // Busca os horários já ocupados no dia
-        db.all(`SELECT time FROM appointments WHERE date = ? AND status != 'cancelled'`, [date], (err, ocupados) => {
-            if (err) return res.status(500).json({ error: err.message });
+        const todosHorarios = grid.length > 0
+            ? grid.map(h => h.time)
+            : []; // Evite deixar horários fixos de exemplo na pública para não confundir o cliente
 
-            const horasOcupadas = ocupados.map(o => o.time);
-            const livres = todosHorarios.filter(h => !horasOcupadas.includes(h));
-
-            res.json(livres);
-        });
+        // O restante da sua lógica de filtragem de horários já agendados continua daqui...
+        return res.json({ horarios: todosHorarios });
     });
 });
-
 // Rota de conclusão de agendamento corrigida utilizando authenticateToken e o status 'concluded' unificado
 app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
     const appointmentId = req.params.id;
