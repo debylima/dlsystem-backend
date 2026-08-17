@@ -179,7 +179,7 @@
         const userId = urlParams.get('id') || urlParams.get('user_id') || '1';
         
         // CORREÇÃO: Buscando na rota correta de serviços públicos do salão
-        const res = await fetch(`${API_BASE}/public/services?user_id=${userId}`);
+        const res = await fetch(`${API_BASE}/api/public/services?user_id=${userId}`);
         
         if (!res.ok) throw new Error("Erro ao buscar serviços");
         
