@@ -10,7 +10,6 @@ const JWT_SECRET = 'dlsystem_secret_key_prod';
 app.use(cors());
 app.use(express.json());
 
-// Permite que o servidor entregue arquivos estáticos localizados na mesma pasta do server.js
 app.use(express.static(__dirname));
 // Rotas explícitas para os arquivos HTML
 app.get('/agendar.html', (req, res) => {
