@@ -22,7 +22,24 @@ app.get('/AGENDA%20AUTOMATIZADA.html', (req, res) => {
 app.get('/login.html', (req, res) => {
     res.sendFile(__dirname + '/login.html');
 });
-// Conexão com o Banco de Dados SQLite
+// ==========================================
+// ROTAS DE ATALHO PARA A AGENDA PÚBLICA
+// ==========================================
+app.get('/salon-settings', (req, res) => {
+    // Redireciona internamente para a rota pública correta de configurações
+    req.url = '/api/public/salon-settings' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
+    app.handle(req, res);
+});
+
+app.get('/servicos', (req, res) => {
+    req.url = '/api/public/services' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
+    app.handle(req, res);
+});
+
+app.get('/profissionais', (req, res) => {
+    req.url = '/api/public/professionals' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
+    app.handle(req, res);
+});
 // Conexão com o Banco de Dados SQLite
 const path = require('path');
 
