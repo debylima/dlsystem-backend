@@ -797,7 +797,21 @@ app.get('/api/financial', authenticateToken, (req, res) => {
         res.json(row || { support_phone: '5553999999999', pix_key: '', explanatory_message: '' });
     });
 });
+app.post('/api/salon-settings', (req, res) => {
+    const { user_id, support_phone, pix_key, explanatory_message } = req.body;
 
+    const sql = `INSERT INTO salon_settings (user_id, support_phone, pix_key, explanatory_message) 
+                 VALUES (?, ?, ?, ?) 
+                 ON CONFLICT(user_id) DO UPDATE SET 
+                 support_phone = excluded.support_phone,
+                 pix_key = excluded.pix_key,
+                 explanatory_message = excluded.explanatory_message`;
+
+    db.run(sql, [user_id, support_phone, pix_key, explanatory_message], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
+});
 // 2. Rota de serviços públicos
 app.get('/api/public/services', (req, res) => {
     const userId = req.query.user_id || 1;
