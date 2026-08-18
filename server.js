@@ -62,15 +62,6 @@ db.serialize(() => {
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     )`);
-// Tabela de Fluxo de Caixa (Comissões e Lançamentos)
-    db.run(`CREATE TABLE IF NOT EXISTS cash_flow (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        type TEXT,
-        description TEXT,
-        amount REAL,
-        date TEXT
-    )`);
     // Tabela de Clientes
     db.run(`CREATE TABLE IF NOT EXISTS clients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -855,8 +846,7 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
     db.serialize(() => {
         db.run('BEGIN TRANSACTION');
 
-        // 1. Busca os dados do agendamento (preço, serviço e profissional)
-        const selectQuery = `SELECT * FROM appointments WHERE id = ? AND user_id = ?`;
+        const selectQuery = `SELECT a.*, s.name as service_name FROM appointments a LEFT JOIN services s ON a.service_id = s.id WHERE a.id = ? AND a.user_id = ?`;
         
         db.get(selectQuery, [appointmentId, userId], (err, appt) => {
             if (err || !appt) {
@@ -864,8 +854,7 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
                 return res.status(404).json({ error: 'Agendamento não encontrado.' });
             }
 
-            // 2. Atualiza o status do agendamento para concluído
-            const updateQuery = `UPDATE appointments SET status = 'concluded' WHERE id = ? AND user_id = ?`;
+            const updateQuery = `UPDATE appointments SET status = 'concluded', payment_status = 'paid' WHERE id = ? AND user_id = ?`;
             
             db.run(updateQuery, [appointmentId, userId], function(updateErr) {
                 if (updateErr) {
@@ -873,28 +862,28 @@ app.post('/api/appointments/:id/complete', authenticateToken, (req, res) => {
                     return res.status(500).json({ error: 'Erro ao atualizar agendamento.' });
                 }
 
-                // 3. Calcula a comissão (exemplo: 50% do valor do serviço, ajuste se necessário)
                 const valorServico = appt.price || 0;
-                const valorComissao = valorServico * 0.50; 
-                const descricaoCaixa = `Comissão referente ao atendimento #${appt.id} - ${appt.service_name || 'Serviço'}`;
+                const descricaoCaixa = `Atendimento concluído - #${appt.id}`;
+                const dataHoje = new Date().toISOString().split('T')[0];
 
-                // 4. Insere o valor da comissão no fluxo de caixa (como saída/despesa)
-                const insertCashQuery = `INSERT INTO cash_flow (user_id, description, type, amount, date) VALUES (?, ?, 'expense', ?, datetime('now'))`;
-
-                db.run(insertCashQuery, [userId, descricaoCaixa, valorComissao], (cashErr) => {
-                    if (cashErr) {
-                        db.run('ROLLBACK');
-                        return res.status(500).json({ error: 'Erro ao registrar comissão no fluxo de caixa.' });
-                    }
-
-                    // 5. Finaliza a transação com sucesso
-                    db.run('COMMIT', (commitErr) => {
-                        if (commitErr) {
-                            return res.status(500).json({ error: 'Erro ao finalizar transação.' });
+                db.run(
+                    `INSERT INTO financial_transactions (user_id, type, description, amount, date, category, status) VALUES (?, 'entry', ?, ?, ?, 'Serviços', 'approved')`,
+                    [userId, descricaoCaixa, valorServico, dataHoje],
+                    function(insertErr) {
+                        if (insertErr) {
+                            db.run('ROLLBACK');
+                            return res.status(500).json({ error: 'Erro ao registrar no financeiro.' });
                         }
-                        res.json({ success: true, message: 'Agendamento concluído e comissão lançada no caixa!' });
-                    });
-                });
+
+                        db.run('COMMIT', (commitErr) => {
+                            if (commitErr) {
+                                db.run('ROLLBACK');
+                                return res.status(500).json({ error: 'Erro ao finalizar transação.' });
+                            }
+                            res.json({ success: true, message: 'Atendimento concluído com sucesso!' });
+                        });
+                    }
+                );
             });
         });
     });
