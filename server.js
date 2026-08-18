@@ -788,7 +788,7 @@ app.get('/api/financial', authenticateToken, (req, res) => {
 // ==========================================
 
 // 1. Rota de configurações públicas do salão
-app.get('/api/public/salon-settings', (req, res) => {
+ app.get(['/salon-settings', '/api/public/salon-settings'], (req, res) => {
     const userId = req.query.user_id || 1;
     const sql = `SELECT * FROM salon_settings WHERE user_id = ?`;
     
@@ -817,26 +817,19 @@ app.get('/api/public/professionals', (req, res) => {
 });
 
 // 4. Rota para calcular os horários livres
-app.get('/api/public/available-slots', (req, res) => {
+app.get(['/public/available-slots', '/api/public/available-slots'], (req, res) => {
     const userId = req.query.user_id || 1;
-    const { date } = req.query; // Ex: "2026-06-06"
+    const { date } = req.query;
 
     if (!date) return res.status(400).json({ error: "Data obrigatória." });
     const dataObj = new Date(date + 'T00:00:00');
-    const diaSemana = dataObj.getDay(); // 0 a 6
+    const diaSemana = dataObj.getDay();
 
-    // 2. Buscar a grade de horários específica para esse dia da semana no salão
-    // (Caso sua tabela use números para o dia da semana: 0-6)
     const sql = `SELECT time FROM salon_schedules WHERE user_id = ? AND day_of_week = ? AND active = 1`;
 
     db.all(sql, [userId, diaSemana], (err, grid) => {
         if (err) return res.status(500).json({ error: err.message });
-
-        const todosHorarios = grid.length > 0
-            ? grid.map(h => h.time)
-            : []; // Evite deixar horários fixos de exemplo na pública para não confundir o cliente
-
-        // O restante da sua lógica de filtragem de horários já agendados continua daqui...
+        const todosHorarios = grid.length > 0 ? grid.map(h => h.time) : [];
         return res.json({ horarios: todosHorarios });
     });
 });
