@@ -142,21 +142,29 @@
         const res = await fetch(`${API_BASE}/api/public/salon-settings?user_id=${userId}`);
         if (res.ok) {
             configSinal = await res.json();
-            console.log("Configurações recebidas do servidor:", configSinal);
+            console.log("Configurações completas recebidas:", configSinal);
 
-            let rawPhone = configSinal.support_phone ? String(configSinal.support_phone).replace(/\D/g, '') : "5553999999999";
+            // Pega o telefone de qualquer uma das possíveis propriedades salvas
+            const telefoneSalvo = configSinal.support_phone || configSinal.whatsapp || configSinal.phone || configSinal.telefone;
             
+            let rawPhone = telefoneSalvo ? String(telefoneSalvo).replace(/\D/g, '') : "5553999999999";
+            
+            // Garante o DDI 55 se o número for do Brasil sem ele
+            if (rawPhone.length <= 11 && !rawPhone.startsWith('55')) {
+                rawPhone = '55' + rawPhone;
+            }
+
             const mensagemSuporte = encodeURIComponent("Olá! Vim pela página de agendamento e preciso de ajuda.");
             const elSuporte = document.getElementById('linkSuporteGeral');
             
             if (elSuporte) {
                 elSuporte.href = `https://wa.me/${rawPhone}?text=${mensagemSuporte}`;
-                console.log(elSuporte.href);
+                console.log("Link do WhatsApp gerado:", elSuporte.href);
             } else {
                 console.error("Elemento linkSuporteGeral não encontrado no HTML!");
             }
         }
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error("Erro ao carregar configs:", err); }
 }
         function abrirSuporteWhatsApp(e) {
             e.preventDefault();
