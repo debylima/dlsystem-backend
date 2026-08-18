@@ -136,7 +136,10 @@
 
    async function carregarConfiguracoes() {
     try {
-        const res = await fetch(`${API_BASE}/salon-settings?user_id=1`);
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id') || urlParams.get('user_id') || '1';
+
+        const res = await fetch(`${API_BASE}/api/public/salon-settings?user_id=${userId}`);
         if (res.ok) {
             configSinal = await res.json();
             console.log("Configurações recebidas do servidor:", configSinal);
@@ -212,41 +215,47 @@
         }
 
         async function buscarHorariosDisponiveis() {
-            const serviceId = document.getElementById('service_id').value;
-            const date = document.getElementById('date').value;
-            const professionalId = document.getElementById('professional_id').value;
-            const container = document.getElementById('gridHorarios');
+    const serviceId = document.getElementById('service_id').value;
+    const date = document.getElementById('date').value;
+    const professionalId = document.getElementById('professional_id').value;
+    const container = document.getElementById('gridHorarios');
 
-            if (!serviceId || !date) return;
+    if (!serviceId || !date) return;
 
-            container.innerHTML = '<p class="col-span-3 text-xs text-slate-400 text-center">Buscando horários livres...</p>';
+    container.innerHTML = '<p class="col-span-3 text-xs text-slate-400 text-center">Buscando horários livres...</p>';
 
-            try {
-                const res = await fetch(`${API_BASE}/available-slots?user_id=1&date=${date}&service_id=${serviceId}&professional_id=${professionalId}`);
-                const slots = await res.json();
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id') || urlParams.get('user_id') || '1';
 
-                container.innerHTML = '';
-                if (!slots || slots.length === 0) {
-                    container.innerHTML = '<p class="col-span-3 text-xs text-rose-500 text-center">Nenhum horário livre nesta data.</p>';
-                    return;
-                }
+        const res = await fetch(`${API_BASE}/api/public/available-slots?user_id=${userId}&date=${date}&service_id=${serviceId}&professional_id=${professionalId}`);
+        const slots = await res.json();
 
-                slots.forEach(time => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'py-2 px-3 text-xs font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-900 hover:text-white transition-all';
-                    btn.innerText = time;
-                    btn.onclick = () => {
-                        document.querySelectorAll('#gridHorarios button').forEach(b => b.classList.remove('bg-slate-900', 'text-white'));
-                        btn.classList.add('bg-slate-900', 'text-white');
-                        document.getElementById('selected_time').value = time;
-                    };
-                    container.appendChild(btn);
-                });
-            } catch (err) {
-                container.innerHTML = '<p class="col-span-3 text-xs text-rose-500 text-center">Erro ao consultar horários.</p>';
-            }
+        container.innerHTML = '';
+        const listaHorarios = slots.horarios || slots; // Garante compatibilidade caso retorne objeto ou array direto
+
+        if (!Array.isArray(listaHorarios) || listaHorarios.length === 0) {
+            container.innerHTML = '<p class="col-span-3 text-xs text-rose-500 text-center">Nenhum horário livre nesta data.</p>';
+            return;
         }
+
+        listaHorarios.forEach(time => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'py-2 px-3 text-xs font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-900 hover:text-white transition-all';
+            btn.innerText = time;
+            btn.onclick = () => {
+                document.querySelectorAll('#gridHorarios button').forEach(b => b.classList.remove('bg-slate-900', 'text-white'));
+                btn.classList.add('bg-slate-900', 'text-white');
+                document.getElementById('selected_time').value = time;
+            };
+            container.appendChild(btn);
+        });
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p class="col-span-3 text-xs text-rose-500 text-center">Erro ao consultar horários.</p>';
+    }
+}
 
         function mostrarSucessoDivertido() {
             const div = document.createElement('div');
