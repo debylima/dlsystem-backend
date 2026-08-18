@@ -350,7 +350,7 @@ app.post('/api/salon/settings', authenticateToken, (req, res) => {
     const stringIdsServicos = Array.isArray(advance_services_ids)
         ? JSON.stringify(advance_services_ids)
         : (typeof advance_services_ids === 'string' ? advance_services_ids : '[]');
-
+        console.log("Salvando WhatsApp no banco:", support_phone);
     db.run(`INSERT INTO salon_settings (user_id, charge_advance, advance_value, explanatory_message, pix_key, advance_services_ids, support_phone)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET 
